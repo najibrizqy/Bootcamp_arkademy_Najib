@@ -11,6 +11,9 @@
     </style>
 </head>
 <body>
+    <?php
+        include "db/koneksi.php";
+    ?>
     <section>
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="box-shadow: 0 5px 5px -4px gray;">
             <div class="container">
@@ -35,28 +38,48 @@
             <div class="modal fade" id="modal-tambah" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">New message</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
-                        <div class="form-group">
-                            <label for="recipient-name" class="col-form-label">Recipient:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">ADD DATA</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="message-text" class="col-form-label">Message:</label>
-                            <textarea class="form-control" id="message-text"></textarea>
+                        <div class="modal-body">
+                            <form method="POST" action="db/add_data.php">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Name..." name="name">
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control" id="hobi" name="hobby">
+                                        <option disabled selected>Hobby...</option>
+                                        <?php 
+                                        $hobi = NEW Bootcamp();
+                                        $hobi->connect();
+                                        $hobi->sql("SELECT * FROM hobi");
+                                        while ($data = $hobi->collectData()) {
+                                            echo "<option value=".$data['id']."> ".$data['name']."</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control" id="kategori" name="category">
+                                        <option disabled selected>Category...</option>
+                                        <?php 
+                                        $kategori = NEW Bootcamp();
+                                        $kategori->connect();
+                                        $kategori->sql("SELECT * FROM kategori");
+                                        while ($data = $kategori->collectData()) {
+                                            echo "<option value=".$data['id']."> ".$data['name']."</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-warning pl-4 pr-4" name="tambah">ADD</button>
+                                </div>
+                            </form>
                         </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Send message</button>
-                    </div>
                     </div>
                 </div>
             </div>
@@ -70,7 +93,6 @@
                 </thead>
                 <tbody>
                 <?php 
-                    include "db/koneksi.php";
                     $data = NEW Bootcamp();
                     $data->connect();
                     $data->sql("SELECT nama.id, nama.name as nama, hobi.name as hobi_name, kategori.name as kategory_name FROM nama INNER JOIN hobi ON nama.id_hobby = hobi.id INNER JOIN kategori ON nama.id_category = kategori.id");
@@ -83,11 +105,42 @@
                                 <td>".$result['hobi_name']."</td>
                                 <td>".$result['kategory_name']."</td>
                                 <td>
-                                    <button type='button' class='btn btn-danger' title='Hapus'><span class='fa fa-close'></span></button>
-                                    <button type='button' class='btn btn-info' title='Ubah'><span class='fa fa-pencil'></span></button>
+                                    <a href='#' class='btn btn-danger' title='Hapus' data-toggle='modal' ><span class='fa fa-close'></span></a>
+                                    <a href='#' class='btn btn-info' title='Ubah' data-toggle='modal' data-target='#modal-update".$result['id']."'><span class='fa fa-pencil'></span></a>
                                 </td>
                             </tr>
                           ";
+                ?>
+                    <!-- Modal Ubah Data -->
+                    <div class="modal fade" id="modal-update<?php echo $result['id'] ?>" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">EDIT DATA</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="Name..." value="<?php echo $result['nama']; ?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="Hobby..."  value="<?php echo $result['hobi_name']; ?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="Category..."  value="<?php echo $result['kategory_name']; ?>">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-warning pl-4 pr-4">ADD</button>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php
                     }
                 ?>
                 </tbody>
@@ -97,5 +150,7 @@
     
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>
